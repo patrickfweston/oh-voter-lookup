@@ -1,5 +1,6 @@
 import { DISPLAY_KEYS, COLUMN_LABELS } from '../constants'
 import type { SearchResponse } from '../types'
+import { ResultCard } from './ResultCard'
 import { ResultTableRow } from './ResultTableRow'
 
 type SearchResultsProps = {
@@ -29,31 +30,49 @@ export function SearchResults({
       {data.rows.length === 0 ? (
         <p className="empty">No matching voters.</p>
       ) : (
-        <div className="table-wrap">
-          <table className="results-table">
-            <thead>
-              <tr>
-                <th scope="col" className="col-expand" aria-hidden />
-                {DISPLAY_KEYS.map((k) => (
-                  <th key={k}>{COLUMN_LABELS[k]}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.rows.map((row, i) => {
-                const rowKey = `${row.SOS_VOTERID ?? 'row'}-${i}`
-                return (
-                  <ResultTableRow
-                    key={rowKey}
-                    row={row}
-                    expanded={expandedKey === rowKey}
-                    onToggle={() => onToggleRow(rowKey)}
-                  />
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="results-table-wrap table-wrap">
+            <table className="results-table">
+              <thead>
+                <tr>
+                  <th scope="col" className="col-expand" aria-hidden />
+                  {DISPLAY_KEYS.map((k) => (
+                    <th key={k}>{COLUMN_LABELS[k]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.rows.map((row, i) => {
+                  const rowKey = `${row.SOS_VOTERID ?? 'row'}-${i}`
+                  return (
+                    <ResultTableRow
+                      key={rowKey}
+                      row={row}
+                      expanded={expandedKey === rowKey}
+                      onToggle={() => onToggleRow(rowKey)}
+                    />
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div
+            className="results-cards"
+            aria-label="Search results (mobile layout)"
+          >
+            {data.rows.map((row, i) => {
+              const rowKey = `${row.SOS_VOTERID ?? 'row'}-${i}`
+              return (
+                <ResultCard
+                  key={rowKey}
+                  row={row}
+                  expanded={expandedKey === rowKey}
+                  onToggle={() => onToggleRow(rowKey)}
+                />
+              )
+            })}
+          </div>
+        </>
       )}
     </section>
   )
