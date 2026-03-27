@@ -28,5 +28,5 @@ export function countyNameFromNumber(
   if (counties.length === 0) return formatted || raw
   const key = canonicalCountyNum(raw)
   const hit = counties.find((c) => canonicalCountyNum(c.number) === key)
-  return hit?.name ?? formatted || raw
+  return hit?.name ?? (formatted || raw)
 }
