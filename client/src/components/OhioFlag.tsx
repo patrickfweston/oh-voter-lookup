@@ -17,6 +17,7 @@ export function OhioFlag({ className }: OhioFlagProps) {
       width="520"
       height="320"
       viewBox="0 0 26 16"
+      preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label="Ohio state flag"
     >

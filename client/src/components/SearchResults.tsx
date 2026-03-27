@@ -34,9 +34,6 @@ export function SearchResults({
             <thead>
               <tr>
                 <th scope="col" className="col-expand" aria-hidden />
-                <th scope="col" className="col-likert">
-                  Lean
-                </th>
                 {DISPLAY_KEYS.map((k) => (
                   <th key={k}>{COLUMN_LABELS[k]}</th>
                 ))}

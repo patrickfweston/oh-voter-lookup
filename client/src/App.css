@@ -89,9 +89,11 @@
   display: block;
   width: clamp(5.5rem, 22vw, 9rem);
   height: auto;
-  margin: 0.35rem 0 0.75rem;
-  border-radius: 2px;
-  box-shadow: var(--shadow);
+  margin: 0 0 0.85rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
 }
 
 .lede {
@@ -239,42 +241,37 @@ th {
   background: transparent;
 }
 
-.th-hint {
-  font-weight: 400;
-  font-size: 0.72rem;
+.vh-lean-block {
+  margin: 0 0 0.65rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px dashed var(--border);
+}
+
+.vh-lean-hint {
+  margin: 0 0 0.55rem;
+  max-width: 36rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
   color: var(--text);
-  white-space: nowrap;
 }
 
-.col-likert {
-  min-width: 4.75rem;
-  max-width: 6.5rem;
-  white-space: normal;
-  vertical-align: middle;
-}
-
-.likert-cell-inner {
-  display: flex;
-  align-items: center;
-}
-
-.likert-gauge-wrap {
+.partisan-lean-gauge .likert-gauge-wrap {
   display: flex;
   flex-direction: column;
   gap: 0.05rem;
-  width: min(100%, 5.5rem);
+  width: min(100%, 9.5rem);
 }
 
 /* react-gauge-component root */
 .partisan-gauge {
   display: block !important;
   width: 100% !important;
-  max-height: 3.35rem;
+  max-height: 3.75rem;
 }
 
 .partisan-gauge svg {
   display: block;
-  max-height: 3.35rem;
+  max-height: 3.75rem;
 }
 
 .likert-axis {

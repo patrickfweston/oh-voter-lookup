@@ -2,10 +2,9 @@ import { Fragment } from 'react'
 import type { KeyboardEvent } from 'react'
 import { DISPLAY_KEYS } from '../constants'
 import type { VoterRow } from '../types'
-import { PartisanLeanCell } from './PartisanLeanCell'
 import { VotingHistory } from './VotingHistory'
 
-const HISTORY_COLSPAN = DISPLAY_KEYS.length + 2
+const HISTORY_COLSPAN = DISPLAY_KEYS.length + 1
 
 type ResultTableRowProps = {
   row: VoterRow
@@ -43,7 +42,6 @@ export function ResultTableRow({ row, expanded, onToggle }: ResultTableRowProps)
         <td className="col-expand" aria-hidden>
           <span className="row-chevron">{expanded ? '▼' : '▶'}</span>
         </td>
-        <PartisanLeanCell row={row} />
         {DISPLAY_KEYS.map((k) => (
           <td key={k}>{row[k] ?? ''}</td>
         ))}
