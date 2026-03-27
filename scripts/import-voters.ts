@@ -32,7 +32,18 @@ type BatchRow = {
   json: Record<string, string>;
 };
 
-async function loadRepoDotenv(): Promise<void> {
+/** Log connection target with password redacted. */
+function redactedDatabaseUrl(raw: string): string {
+  try {
+    const u = new URL(raw);
+    if (u.password) u.password = '***';
+    return u.toString();
+  } catch {
+    return '(could not parse DATABASE_URL)';
+  }
+}
+
+async function loadRepoDotenv(): Promise<boolean> {
   const envPath = path.join(REPO_ROOT, '.env');
   try {
     const text = await readFile(envPath, 'utf8');
@@ -51,8 +62,9 @@ async function loadRepoDotenv(): Promise<void> {
       }
       if (process.env[key] === undefined) process.env[key] = val;
     }
+    return true;
   } catch {
-    /* no .env */
+    return false;
   }
 }
 
@@ -99,6 +111,8 @@ async function importFile(
   onStats: (inserted: number) => void,
 ): Promise<void> {
   const batch: BatchRow[] = [];
+  let batchCount = 0;
+  let sawFirstDataRow = false;
   const parser = createReadStream(filePath).pipe(
     parse({
       columns: true,
@@ -108,8 +122,18 @@ async function importFile(
     }),
   );
 
+  console.log(
+    '  Streaming CSV (skipping blank lines until first data row; large files can pause here while parsing)…',
+  );
+
   for await (const record of parser as AsyncIterable<Record<string, string>>) {
     if (!isDataRow(record)) continue;
+    if (!sawFirstDataRow) {
+      sawFirstDataRow = true;
+      console.log(
+        `  First voter row seen; committing in batches of ${BATCH_SIZE} (each further batch prints a dot).`,
+      );
+    }
     const picked = pickRow(record);
     const sos = (picked.SOS_VOTERID ?? '').trim();
     if (!sos) continue;
@@ -128,22 +152,37 @@ async function importFile(
     if (batch.length >= BATCH_SIZE) {
       const n = batch.length;
       await flushBatch(client, batch);
+      batchCount += 1;
       onStats(n);
       batch.length = 0;
+      if (batchCount > 1) process.stdout.write('.');
     }
   }
 
   if (batch.length > 0) {
     const n = batch.length;
     await flushBatch(client, batch);
+    batchCount += 1;
     onStats(n);
     batch.length = 0;
   }
+
+  if (batchCount > 1) process.stdout.write('\n');
+  if (!sawFirstDataRow) console.log('  No data rows found in this file (nothing inserted).');
 }
 
 async function main(): Promise<void> {
-  await loadRepoDotenv();
-  getDatabaseUrl();
+  const t0 = Date.now();
+  const hadDotenv = await loadRepoDotenv();
+  console.log(
+    hadDotenv
+      ? `Loaded environment from ${path.join(REPO_ROOT, '.env')}`
+      : 'No repo .env file (using process environment only).',
+  );
+
+  const dbUrl = getDatabaseUrl();
+  console.log(`DATABASE_URL → ${redactedDatabaseUrl(dbUrl)}`);
+  console.log(`Matching data files: ${DATA_GLOB}`);
 
   const files = await glob(DATA_GLOB, { cwd: REPO_ROOT, absolute: true, nodir: true });
   const sorted = files.sort();
@@ -153,35 +192,57 @@ async function main(): Promise<void> {
     );
     process.exit(1);
   }
+  console.log(`Found ${sorted.length} file(s).`);
 
-  const pool = new pg.Pool({ connectionString: getDatabaseUrl(), max: 1 });
+  console.log('Connecting to PostgreSQL…');
+  const pool = new pg.Pool({ connectionString: dbUrl, max: 1 });
+  const tConnect = Date.now();
   const client = await pool.connect();
+  console.log(`Connected (${Date.now() - tConnect}ms).`);
+
   let inserted = 0;
-  const t0 = Date.now();
 
   try {
+    console.log('BEGIN transaction (import is all-or-nothing until commit).');
     await client.query('BEGIN');
+
+    console.log(
+      'ensureSchema: extension pg_trgm, voters table, indexes (can take a while on a big existing table)…',
+    );
+    const tSchema = Date.now();
     await ensureSchema(client);
+    console.log(`ensureSchema finished (${Date.now() - tSchema}ms).`);
+
+    console.log('TRUNCATE voters — removing all existing rows before reload.');
+    const tTrunc = Date.now();
     await client.query('TRUNCATE voters');
-    console.log(`Truncated voters; loading ${sorted.length} file(s)…`);
+    console.log(`TRUNCATE complete (${Date.now() - tTrunc}ms). Loading ${sorted.length} file(s)…`);
 
     let fileIndex = 0;
     for (const filePath of sorted) {
       fileIndex += 1;
       const base = path.basename(filePath);
-      process.stdout.write(`[${fileIndex}/${sorted.length}] ${base} … `);
+      console.log('');
+      console.log(`[${fileIndex}/${sorted.length}] ${base}`);
+      console.log(`  ${filePath}`);
       const before = inserted;
       await importFile(client, filePath, (n) => {
         inserted += n;
       });
-      console.log(`${inserted - before} rows (total ${inserted})`);
+      console.log(
+        `  Done with file: +${inserted - before} rows this file; ${inserted} rows staged in DB so far (uncommitted until all files finish).`,
+      );
     }
 
+    console.log('');
+    console.log('COMMIT transaction…');
     await client.query('COMMIT');
+    console.log('Running ANALYZE voters…');
     await client.query('ANALYZE voters');
     const sec = ((Date.now() - t0) / 1000).toFixed(1);
-    console.log(`Done. ${inserted} rows in ${sec}s.`);
+    console.log(`Finished. ${inserted} rows loaded in ${sec}s.`);
   } catch (err) {
+    console.error('Error during import; rolling back transaction.');
     await client.query('ROLLBACK').catch(() => {});
     throw err;
   } finally {
