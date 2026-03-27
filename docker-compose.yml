@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: voter
       POSTGRES_DB: voter_guide
     ports:
-      - '5432:5432'
+      - '5492:9'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -21,9 +21,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile.api
     environment:
-      DATABASE_URL: postgresql://voter:voter@db:5432/voter_guide
+      DATABASE_URL: postgresql://voter:voter@db:5492/voter_guide
       HOST: 0.0.0.0
-      PORT: '3001'
+      PORT: '3092'
     depends_on:
       db:
         condition: service_healthy
