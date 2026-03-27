@@ -1,4 +1,8 @@
 import pg from 'pg';
+import {
+  type CountyOption,
+  OHIO_COUNTY_NAME_BY_NUMBER,
+} from './ohCounties';
 
 const MAX_RESULTS = 500;
 
@@ -36,7 +40,8 @@ export async function ensureSchema(client: pg.PoolClient): Promise<void> {
   await client.query(`
     CREATE TABLE IF NOT EXISTS voters (
       sos_voterid TEXT PRIMARY KEY,
-      county_label TEXT NOT NULL,
+      county_label TEXT NOT NULL DEFAULT '',
+      county_number TEXT NOT NULL DEFAULT '',
       last_name TEXT NOT NULL DEFAULT '',
       first_name TEXT NOT NULL DEFAULT '',
       middle_name TEXT NOT NULL DEFAULT '',
@@ -44,7 +49,17 @@ export async function ensureSchema(client: pg.PoolClient): Promise<void> {
     )
   `);
   await client.query(`
-    CREATE INDEX IF NOT EXISTS idx_voters_county ON voters (county_label)
+    ALTER TABLE voters ADD COLUMN IF NOT EXISTS county_number TEXT NOT NULL DEFAULT '';
+  `);
+  await client.query(`
+    UPDATE voters SET county_number = trim(coalesce(row_json->>'COUNTY_NUMBER',''))
+    WHERE trim(coalesce(county_number,'')) = ''
+      AND (row_json->>'COUNTY_NUMBER') IS NOT NULL
+      AND trim(row_json->>'COUNTY_NUMBER') <> '';
+  `);
+  await client.query(`DROP INDEX IF EXISTS idx_voters_county`);
+  await client.query(`
+    CREATE INDEX IF NOT EXISTS idx_voters_county_number ON voters (county_number)
   `);
   await client.query(`
     CREATE INDEX IF NOT EXISTS idx_voters_last_trgm
@@ -60,12 +75,23 @@ export async function ensureSchema(client: pg.PoolClient): Promise<void> {
   `);
 }
 
-export async function listCountiesFromDb(): Promise<string[]> {
+export async function listCountyOptionsFromDb(): Promise<CountyOption[]> {
   const p = getPool();
-  const { rows } = await p.query<{ county_label: string }>(
-    `SELECT DISTINCT county_label FROM voters ORDER BY county_label`,
+  const { rows } = await p.query<{ n: string }>(
+    `
+    SELECT DISTINCT trim(county_number) AS n
+    FROM voters
+    WHERE trim(county_number) <> ''
+    ORDER BY trim(county_number)::int
+    `,
   );
-  return rows.map((r) => r.county_label);
+  return rows.map((r) => {
+    const num = String(parseInt(r.n, 10));
+    return {
+      number: num,
+      name: OHIO_COUNTY_NAME_BY_NUMBER[num] ?? `County ${num}`,
+    };
+  });
 }
 
 export type SearchResult = {
@@ -84,6 +110,19 @@ function jsonDistrictClause(jsonKey: string, paramIndex: number): string {
         trim(${j}) ~ '^[0-9]+$'
         AND trim($${paramIndex}::text) ~ '^[0-9]+$'
         AND trim(${j})::int = trim($${paramIndex}::text)::int
+      )
+    ))`;
+}
+
+/** Filter on normalized SOS county number (column), same numeric rules as districts. */
+function countyNumberClause(paramIndex: number): string {
+  const c = `trim(coalesce(county_number,''))`;
+  return `($${paramIndex}::text = '' OR (
+      ${c} = trim($${paramIndex}::text)
+      OR (
+        ${c} ~ '^[0-9]+$'
+        AND trim($${paramIndex}::text) ~ '^[0-9]+$'
+        AND ${c}::int = trim($${paramIndex}::text)::int
       )
     ))`;
 }
@@ -113,6 +152,7 @@ export async function searchVoters(params: {
 
   const limit = MAX_RESULTS + 1;
   const p = getPool();
+  const countyClause = countyNumberClause(4);
   const districtCongress = jsonDistrictClause('CONGRESSIONAL_DISTRICT', 5);
   const districtHouse = jsonDistrictClause(
     'STATE_REPRESENTATIVE_DISTRICT',
@@ -127,7 +167,7 @@ export async function searchVoters(params: {
       ($1::text = '' OR strpos(lower(last_name), lower($1::text)) > 0)
       AND ($2::text = '' OR strpos(lower(first_name), lower($2::text)) > 0)
       AND ($3::text = '' OR strpos(lower(middle_name), lower($3::text)) > 0)
-      AND ($4::text = '' OR county_label = $4)
+      AND ${countyClause}
       AND ${districtCongress}
       AND ${districtHouse}
       AND ${districtSenate}

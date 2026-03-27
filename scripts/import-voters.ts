@@ -2,7 +2,7 @@
  * Full reload of voter rows from Ohio SOS-style TXT (quoted CSV) files into PostgreSQL.
  *
  * - Truncates the voters table, then loads every file matching VOTER_DATA_GLOB (default data/*.txt).
- * - SOS_VOTERID is the primary key; a full run removes anyone no longer present in the files.
+ * - SOS_VOTERID is the primary key; county comes from each row's COUNTY_NUMBER (works for one statewide file or per-county files).
  *
  * Prerequisites: DATABASE_URL in environment or repo .env; PostgreSQL with pg_trgm (created by ensureSchema).
  *
@@ -15,12 +15,7 @@ import { parse } from 'csv-parse';
 import { readFile } from 'node:fs/promises';
 import { glob } from 'glob';
 import pg from 'pg';
-import {
-  pickRow,
-  isDataRow,
-  stemFromFile,
-  fileStemToSentenceCase,
-} from '../server/voterRow';
+import { pickRow, isDataRow } from '../server/voterRow';
 import { ensureSchema, getDatabaseUrl } from '../server/db';
 
 /** Run from the repo root (e.g. `npm run db:import`). */
@@ -30,7 +25,7 @@ const BATCH_SIZE = Number(process.env.IMPORT_BATCH_SIZE) || 800;
 
 type BatchRow = {
   sos: string;
-  county: string;
+  countyNumber: string;
   last: string;
   first: string;
   middle: string;
@@ -71,12 +66,13 @@ async function flushBatch(
   let i = 1;
   for (const r of batch) {
     parts.push(
-      `($${i},$${i + 1},$${i + 2},$${i + 3},$${i + 4},$${i + 5}::jsonb)`,
+      `($${i},$${i + 1},$${i + 2},$${i + 3},$${i + 4},$${i + 5},$${i + 6}::jsonb)`,
     );
-    i += 6;
+    i += 7;
     vals.push(
       r.sos,
-      r.county,
+      r.countyNumber,
+      '',
       r.last,
       r.first,
       r.middle,
@@ -84,9 +80,10 @@ async function flushBatch(
     );
   }
   await client.query(
-    `INSERT INTO voters (sos_voterid, county_label, last_name, first_name, middle_name, row_json)
+    `INSERT INTO voters (sos_voterid, county_number, county_label, last_name, first_name, middle_name, row_json)
      VALUES ${parts.join(',')}
      ON CONFLICT (sos_voterid) DO UPDATE SET
+       county_number = EXCLUDED.county_number,
        county_label = EXCLUDED.county_label,
        last_name = EXCLUDED.last_name,
        first_name = EXCLUDED.first_name,
@@ -99,7 +96,6 @@ async function flushBatch(
 async function importFile(
   client: pg.PoolClient,
   filePath: string,
-  countyLabel: string,
   onStats: (inserted: number) => void,
 ): Promise<void> {
   const batch: BatchRow[] = [];
@@ -118,9 +114,11 @@ async function importFile(
     const sos = (picked.SOS_VOTERID ?? '').trim();
     if (!sos) continue;
 
+    const countyNumber = (picked.COUNTY_NUMBER ?? '').trim();
+
     batch.push({
       sos,
-      county: countyLabel,
+      countyNumber,
       last: picked.LAST_NAME ?? '',
       first: picked.FIRST_NAME ?? '',
       middle: picked.MIDDLE_NAME ?? '',
@@ -170,11 +168,10 @@ async function main(): Promise<void> {
     let fileIndex = 0;
     for (const filePath of sorted) {
       fileIndex += 1;
-      const label = fileStemToSentenceCase(stemFromFile(filePath));
       const base = path.basename(filePath);
-      process.stdout.write(`[${fileIndex}/${sorted.length}] ${base} → ${label} … `);
+      process.stdout.write(`[${fileIndex}/${sorted.length}] ${base} … `);
       const before = inserted;
-      await importFile(client, filePath, label, (n) => {
+      await importFile(client, filePath, (n) => {
         inserted += n;
       });
       console.log(`${inserted - before} rows (total ${inserted})`);

@@ -2,7 +2,7 @@ import express from 'express';
 import {
   ensureSchema,
   getPool,
-  listCountiesFromDb,
+  listCountyOptionsFromDb,
   searchVoters,
   voterCount,
 } from './db';
@@ -24,7 +24,7 @@ app.get('/api/counties', async (_req, res) => {
       });
       return;
     }
-    const counties = await listCountiesFromDb();
+    const counties = await listCountyOptionsFromDb();
     res.json({ counties });
   } catch (err) {
     const message =

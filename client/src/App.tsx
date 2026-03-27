@@ -4,7 +4,11 @@ import './App.css'
 import { AppHeader } from './components/AppHeader'
 import { SearchForm } from './components/SearchForm'
 import { SearchResults } from './components/SearchResults'
-import type { CountiesResponse, SearchResponse } from './types'
+import type {
+  CountiesResponse,
+  CountyOption,
+  SearchResponse,
+} from './types'
 
 function App() {
   const [last, setLast] = useState('')
@@ -14,7 +18,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<SearchResponse | null>(null)
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
-  const [counties, setCounties] = useState<string[]>([])
+  const [counties, setCounties] = useState<CountyOption[]>([])
   const [county, setCounty] = useState('')
   const [congressional, setCongressional] = useState('')
   const [ohHouse, setOhHouse] = useState('')
@@ -28,6 +32,7 @@ function App() {
         const res = await fetch('/api/counties')
         const body = (await res.json().catch(() => ({}))) as CountiesResponse
         if (!res.ok || !Array.isArray(body.counties)) return
+        if (!body.counties.every((c) => c && typeof c.number === 'string')) return
         if (!cancelled) setCounties(body.counties)
       } catch {
         /* counties optional; search still works */

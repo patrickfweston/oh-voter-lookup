@@ -1,4 +1,5 @@
 import type { FormEvent } from 'react'
+import type { CountyOption } from '../types'
 
 type SearchFormProps = {
   last: string
@@ -8,7 +9,7 @@ type SearchFormProps = {
   congressional: string
   ohHouse: string
   ohSenate: string
-  counties: string[]
+  counties: CountyOption[]
   loading: boolean
   onLastChange: (value: string) => void
   onFirstChange: (value: string) => void
@@ -73,17 +74,17 @@ export function SearchForm({
           />
         </label>
         <label>
-          County
+          County (by number)
           <select
             name="county"
             value={county}
             onChange={(e) => onCountyChange(e.target.value)}
-            aria-label="Limit search to one county"
+            aria-label="Limit search to one county by SOS county number"
           >
             <option value="">All counties</option>
             {counties.map((c) => (
-              <option key={c} value={c}>
-                {c}
+              <option key={c.number} value={c.number}>
+                {c.name} ({c.number})
               </option>
             ))}
           </select>
