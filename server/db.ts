@@ -75,23 +75,50 @@ export type SearchResult = {
   maxResults: number;
 };
 
+/** Match stored SOS district strings; numeric values compare equal with or without leading zeros (e.g. 5 vs 05). */
+function jsonDistrictClause(jsonKey: string, paramIndex: number): string {
+  const j = `coalesce(row_json->>'${jsonKey}','')`;
+  return `($${paramIndex}::text = '' OR (
+      trim(${j}) = trim($${paramIndex}::text)
+      OR (
+        trim(${j}) ~ '^[0-9]+$'
+        AND trim($${paramIndex}::text) ~ '^[0-9]+$'
+        AND trim(${j})::int = trim($${paramIndex}::text)::int
+      )
+    ))`;
+}
+
 export async function searchVoters(params: {
   last: string;
   first: string;
   middle: string;
   county: string;
+  congressional: string;
+  ohHouse: string;
+  ohSenate: string;
 }): Promise<SearchResult> {
   const last = params.last.trim();
   const first = params.first.trim();
   const middle = params.middle.trim();
   const county = params.county.trim();
+  const congressional = params.congressional.trim();
+  const ohHouse = params.ohHouse.trim();
+  const ohSenate = params.ohSenate.trim();
 
-  if (!last && !first && !middle) {
-    throw new Error('Provide at least one of last, first, or middle.');
+  if (!last && !first && !middle && !congressional && !ohHouse && !ohSenate) {
+    throw new Error(
+      'Provide at least one name field or one district filter (Congressional, Ohio House, or Ohio Senate).',
+    );
   }
 
   const limit = MAX_RESULTS + 1;
   const p = getPool();
+  const districtCongress = jsonDistrictClause('CONGRESSIONAL_DISTRICT', 5);
+  const districtHouse = jsonDistrictClause(
+    'STATE_REPRESENTATIVE_DISTRICT',
+    6,
+  );
+  const districtSenate = jsonDistrictClause('STATE_SENATE_DISTRICT', 7);
   const { rows: dbRows } = await p.query<{ row_json: unknown }>(
     `
     SELECT row_json
@@ -101,10 +128,22 @@ export async function searchVoters(params: {
       AND ($2::text = '' OR strpos(lower(first_name), lower($2::text)) > 0)
       AND ($3::text = '' OR strpos(lower(middle_name), lower($3::text)) > 0)
       AND ($4::text = '' OR county_label = $4)
+      AND ${districtCongress}
+      AND ${districtHouse}
+      AND ${districtSenate}
     ORDER BY last_name, first_name, sos_voterid
-    LIMIT $5
+    LIMIT $8
     `,
-    [last, first, middle, county, limit],
+    [
+      last,
+      first,
+      middle,
+      county,
+      congressional,
+      ohHouse,
+      ohSenate,
+      limit,
+    ],
   );
 
   const truncated = dbRows.length > MAX_RESULTS;

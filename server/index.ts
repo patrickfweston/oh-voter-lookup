@@ -38,10 +38,14 @@ app.get('/api/search', async (req, res) => {
   const first = String(req.query.first ?? '').trim();
   const middle = String(req.query.middle ?? '').trim();
   const county = String(req.query.county ?? '').trim();
+  const congressional = String(req.query.congressional ?? '').trim();
+  const ohHouse = String(req.query.oh_house ?? '').trim();
+  const ohSenate = String(req.query.oh_senate ?? '').trim();
 
-  if (!last && !first && !middle) {
+  if (!last && !first && !middle && !congressional && !ohHouse && !ohSenate) {
     res.status(400).json({
-      error: 'Provide at least one of last, first, or middle.',
+      error:
+        'Provide at least one name field or one district (congressional, oh_house, or oh_senate).',
     });
     return;
   }
@@ -55,7 +59,15 @@ app.get('/api/search', async (req, res) => {
       });
       return;
     }
-    const result = await searchVoters({ last, first, middle, county });
+    const result = await searchVoters({
+      last,
+      first,
+      middle,
+      county,
+      congressional,
+      ohHouse,
+      ohSenate,
+    });
     res.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Search failed';
