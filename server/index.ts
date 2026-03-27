@@ -14,6 +14,11 @@ const HOST = process.env.HOST || '127.0.0.1';
 
 const app = express();
 
+/** Lightweight check for reverse proxies and Docker healthchecks (always 200 when process is up). */
+app.get('/api/health', (_req, res) => {
+  res.status(200).type('text/plain').send('ok');
+});
+
 app.get('/api/counties', async (_req, res) => {
   try {
     const n = await voterCount();
