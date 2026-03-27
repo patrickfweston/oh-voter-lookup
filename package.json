@@ -9,7 +9,8 @@
     "start:server": "tsx server/index.ts",
     "download:counties": "node scripts/download-ohio-counties.mjs",
     "db:import": "tsx scripts/import-voters.ts",
-    "db:up": "docker compose up -d"
+    "db:up": "docker compose up -d db",
+    "docker:up": "docker compose up -d --build"
   },
   "dependencies": {
     "csv-parse": "^5.6.0",
