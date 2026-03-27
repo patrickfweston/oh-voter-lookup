@@ -55,7 +55,7 @@ for (const k of DISPLAY_KEYS) {
     k === 'PARTY_AFFILIATION'
       ? 'Party affiliation'
       : k === 'COUNTY_NUMBER'
-        ? 'County number'
+        ? 'County'
         : String(k).replaceAll('_', ' ')
 }
 

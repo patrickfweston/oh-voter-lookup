@@ -1,18 +1,25 @@
 import { Fragment } from 'react'
 import type { KeyboardEvent } from 'react'
 import { DISPLAY_KEYS } from '../constants'
-import type { VoterRow } from '../types'
+import { countyNameFromNumber } from '../lib/countyNumber'
+import type { CountyOption, VoterRow } from '../types'
 import { VotingHistory } from './VotingHistory'
 
 const HISTORY_COLSPAN = DISPLAY_KEYS.length + 1
 
 type ResultTableRowProps = {
   row: VoterRow
+  counties: CountyOption[]
   expanded: boolean
   onToggle: () => void
 }
 
-export function ResultTableRow({ row, expanded, onToggle }: ResultTableRowProps) {
+export function ResultTableRow({
+  row,
+  counties,
+  expanded,
+  onToggle,
+}: ResultTableRowProps) {
   const label = [row.LAST_NAME, row.FIRST_NAME, row.MIDDLE_NAME]
     .filter(Boolean)
     .join(' ')
@@ -43,7 +50,11 @@ export function ResultTableRow({ row, expanded, onToggle }: ResultTableRowProps)
           <span className="row-chevron">{expanded ? '▼' : '▶'}</span>
         </td>
         {DISPLAY_KEYS.map((k) => (
-          <td key={k}>{row[k] ?? ''}</td>
+          <td key={k}>
+            {k === 'COUNTY_NUMBER'
+              ? countyNameFromNumber(row.COUNTY_NUMBER, counties)
+              : (row[k] ?? '')}
+          </td>
         ))}
       </tr>
       {expanded ? (

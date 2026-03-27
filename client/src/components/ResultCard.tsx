@@ -3,8 +3,8 @@ import {
   COLUMN_LABELS,
   MOBILE_CARD_SUMMARY_KEYS,
 } from '../constants'
-import { formatSosCountyNumber } from '../lib/countyNumber'
-import type { VoterRow } from '../types'
+import { countyNameFromNumber } from '../lib/countyNumber'
+import type { CountyOption, VoterRow } from '../types'
 import { VotingHistory } from './VotingHistory'
 
 const summaryKeySet = new Set<string>(MOBILE_CARD_SUMMARY_KEYS)
@@ -13,18 +13,19 @@ const expandedFieldKeys = DISPLAY_KEYS.filter((k) => !summaryKeySet.has(k))
 
 type ResultCardProps = {
   row: VoterRow
+  counties: CountyOption[]
   expanded: boolean
   onToggle: () => void
 }
 
-export function ResultCard({ row, expanded, onToggle }: ResultCardProps) {
+export function ResultCard({ row, counties, expanded, onToggle }: ResultCardProps) {
   const label = [row.LAST_NAME, row.FIRST_NAME, row.MIDDLE_NAME, row.SUFFIX]
     .filter(Boolean)
     .join(' ')
 
   const nameForAria = label || 'voter'
 
-  const countyNumber = formatSosCountyNumber(row.COUNTY_NUMBER)
+  const countyDisplay = countyNameFromNumber(row.COUNTY_NUMBER, counties)
 
   return (
     <article className="result-card">
@@ -55,7 +56,7 @@ export function ResultCard({ row, expanded, onToggle }: ResultCardProps) {
           </div>
           <div className="result-card-field">
             <dt>{COLUMN_LABELS.COUNTY_NUMBER}</dt>
-            <dd>{countyNumber}</dd>
+            <dd>{countyDisplay}</dd>
           </div>
         </dl>
       ) : (
@@ -64,7 +65,11 @@ export function ResultCard({ row, expanded, onToggle }: ResultCardProps) {
             {expandedFieldKeys.map((k) => (
               <div key={k} className="result-card-field">
                 <dt>{COLUMN_LABELS[k]}</dt>
-                <dd>{row[k] ?? ''}</dd>
+                <dd>
+                  {k === 'COUNTY_NUMBER'
+                    ? countyDisplay
+                    : (row[k] ?? '')}
+                </dd>
               </div>
             ))}
           </dl>
