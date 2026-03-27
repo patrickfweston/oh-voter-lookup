@@ -79,9 +79,10 @@ export async function listCountyOptionsFromDb(): Promise<CountyOption[]> {
   const p = getPool();
   const { rows } = await p.query<{ n: string }>(
     `
-    SELECT DISTINCT trim(county_number) AS n
+    SELECT trim(county_number) AS n
     FROM voters
     WHERE trim(county_number) <> ''
+    GROUP BY trim(county_number)
     ORDER BY
       CASE
         WHEN trim(county_number) ~ '^[0-9]+$' THEN trim(county_number)::int
