@@ -256,8 +256,11 @@ th {
 }
 
 .partisan-lean-gauge {
-  display: inline-block;
-  width: fit-content;
+  /* inline-flex + fixed inner width — avoid min(100%, …) which uses full table cell width */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: auto;
   max-width: 100%;
   overflow: visible;
   padding: 0.65rem 0.9rem 0.6rem;
@@ -274,7 +277,8 @@ th {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  width: min(100%, 9.5rem);
+  width: 9.5rem;
+  max-width: 100%;
   overflow: visible;
 }
 

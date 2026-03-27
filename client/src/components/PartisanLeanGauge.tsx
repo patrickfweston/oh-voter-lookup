@@ -70,7 +70,7 @@ export function PartisanLeanGauge({ row }: PartisanLeanGaugeProps) {
           pointer={{
             type: 'needle',
             color: NEEDLE_BY_VARIANT[variant],
-            baseColor: '#ffffff',
+            baseColor: '#eeeeee',
             length: 0.72,
             width: 28,
             animate: true,

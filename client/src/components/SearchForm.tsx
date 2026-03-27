@@ -84,7 +84,7 @@ export function SearchForm({
             <option value="">All counties</option>
             {counties.map((c) => (
               <option key={c.number} value={c.number}>
-                {c.name} ({c.number})
+                {c.name}
               </option>
             ))}
           </select>
