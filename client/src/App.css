@@ -238,30 +238,78 @@ th {
 }
 
 .col-likert {
-  min-width: 8.5rem;
-  max-width: 11rem;
+  min-width: 4.75rem;
+  max-width: 6.25rem;
   white-space: normal;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .likert-cell-inner {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  align-items: flex-start;
-}
-
-.likert-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  width: min(100%, 4.5rem);
-}
-
-.likert-dots {
-  display: flex;
-  gap: 3px;
   align-items: center;
+}
+
+.likert-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: min(100%, 4.6rem);
+}
+
+.likert-gauge-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.gauge-arc-bg {
+  stroke: var(--border);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.gauge-arc-tint {
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.gauge-needle {
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.gauge-needle--neutral {
+  stroke: #6b7280;
+}
+
+.gauge-needle--d-lean {
+  stroke: #3b82f6;
+}
+
+.gauge-needle--d-strong {
+  stroke: #1e40af;
+}
+
+.gauge-needle--r-lean {
+  stroke: #f87171;
+}
+
+.gauge-needle--r-strong {
+  stroke: #b91c1c;
+}
+
+.gauge-pivot-ring {
+  fill: var(--bg);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.gauge-pivot {
+  fill: var(--text-h);
 }
 
 .likert-axis {
@@ -271,55 +319,7 @@ th {
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--text);
-  padding: 0 1px;
-}
-
-.likert-dot {
-  flex: 1;
-  min-width: 0.4rem;
-  max-width: 0.55rem;
-  height: 0.68rem;
-  border-radius: 2px;
-  background: var(--border);
-  opacity: 0.65;
-}
-
-.likert-dot--neutral {
-  background: #9ca3af;
-  opacity: 1;
-}
-
-.likert-dot--d-lean {
-  background: #93c5fd;
-  opacity: 1;
-}
-
-.likert-dot--d-strong {
-  background: #1d4ed8;
-  opacity: 1;
-}
-
-.likert-dot--r-lean {
-  background: #fca5a5;
-  opacity: 1;
-}
-
-.likert-dot--r-strong {
-  background: #b91c1c;
-  opacity: 1;
-}
-
-.likert-num {
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-h);
-}
-
-.likert-caption {
-  font-size: 0.72rem;
-  line-height: 1.25;
-  color: var(--text);
+  padding: 0 2px;
 }
 
 .col-expand {

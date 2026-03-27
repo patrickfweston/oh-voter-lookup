@@ -53,6 +53,30 @@ export function likertBarFill(likert: PartisanLikert): {
   }
 }
 
+/**
+ * Fuel-gauge needle rotation (degrees) around a bottom pivot. Positive =
+ * clockwise in SVG → tilts toward Republican; negative → Democrat; 0 =
+ * neutral (straight up).
+ */
+export function likertNeedleRotateDeg(likert: PartisanLikert): number {
+  switch (likert) {
+    case 1:
+      return 54
+    case 2:
+      return 27
+    case 3:
+      return 0
+    case 4:
+      return -27
+    case 5:
+      return -54
+    default: {
+      const _exhaustive: never = likert
+      return _exhaustive
+    }
+  }
+}
+
 export const LIKERT_SHORT: Record<PartisanLikert, string> = {
   1: 'Strong R',
   2: 'Lean R',
