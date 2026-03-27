@@ -146,6 +146,7 @@ function MainApp() {
       {data ? (
         <SearchResults
           data={data}
+          counties={counties}
           expandedKey={expandedKey}
           onToggleRow={toggleRow}
         />
