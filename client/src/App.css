@@ -85,6 +85,15 @@
   letter-spacing: -0.02em;
 }
 
+.header-flag {
+  display: block;
+  width: clamp(5.5rem, 22vw, 9rem);
+  height: auto;
+  margin: 0.35rem 0 0.75rem;
+  border-radius: 2px;
+  box-shadow: var(--shadow);
+}
+
 .lede {
   margin: 0 0 1.25rem;
   max-width: 52rem;

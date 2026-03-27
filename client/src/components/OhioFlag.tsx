@@ -1,8 +1,11 @@
+import { useId } from 'react'
+
 /**
  * Ohio state flag (guidon / burgee) — simplified geometry for small UI use.
  * Colors: red #BF0A30, white #FFF, blue #002868 per common references.
  */
 export function OhioFlag({ className }: { className?: string }) {
+  const clipId = useId().replace(/:/g, '')
   const starR = 2.15
   const stars = Array.from({ length: 17 }, (_, i) => {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / 17
@@ -22,11 +25,11 @@ export function OhioFlag({ className }: { className?: string }) {
       aria-label="Ohio state flag"
     >
       <defs>
-        <clipPath id="ohio-burgee-clip">
+        <clipPath id={clipId}>
           <path d="M0 0h220l40 75-40 75H0z" />
         </clipPath>
       </defs>
-      <g clipPath="url(#ohio-burgee-clip)">
+      <g clipPath={`url(#${clipId})`}>
         <rect y="0" width="260" height="30" fill="#bf0a30" />
         <rect y="30" width="260" height="30" fill="#fff" />
         <rect y="60" width="260" height="30" fill="#bf0a30" />

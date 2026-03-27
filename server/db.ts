@@ -82,14 +82,23 @@ export async function listCountyOptionsFromDb(): Promise<CountyOption[]> {
     SELECT DISTINCT trim(county_number) AS n
     FROM voters
     WHERE trim(county_number) <> ''
-    ORDER BY trim(county_number)::int
+    ORDER BY
+      CASE
+        WHEN trim(county_number) ~ '^[0-9]+$' THEN trim(county_number)::int
+        ELSE 9999
+      END,
+      trim(county_number)
     `,
   );
   return rows.map((r) => {
-    const num = String(parseInt(r.n, 10));
+    const n = r.n.trim();
+    const numeric =
+      /^[0-9]+$/.test(n) && Number.isFinite(parseInt(n, 10))
+        ? String(parseInt(n, 10))
+        : n;
     return {
-      number: num,
-      name: OHIO_COUNTY_NAME_BY_NUMBER[num] ?? `County ${num}`,
+      number: numeric,
+      name: OHIO_COUNTY_NAME_BY_NUMBER[numeric] ?? `County ${numeric}`,
     };
   });
 }
