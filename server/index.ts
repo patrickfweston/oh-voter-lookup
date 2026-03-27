@@ -8,8 +8,8 @@ import {
 } from './db';
 import { loadRepoDotenvSync } from './env';
 
-/** Env: PORT (default 3001), HOST (default 127.0.0.1), DATABASE_URL (required). */
-const PORT = Number(process.env.PORT) || 3001;
+/** Env: PORT (default 3092), HOST (default 127.0.0.1), DATABASE_URL (required). */
+const PORT = Number(process.env.PORT) || 3092;
 const HOST = process.env.HOST || '127.0.0.1';
 
 const app = express();
