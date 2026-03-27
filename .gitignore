@@ -1,0 +1,53 @@
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build output (Vite / bundlers)
+dist/
+dist-ssr/
+
+# Environment (keep example tracked)
+.env
+.env.*
+!.env.example
+
+# Vite — env files that should stay local
+*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing / coverage
+coverage/
+*.lcov
+
+# Caches
+.cache/
+.parcel-cache/
+.vite/
+.mf/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large local data (voter exports)
+data/

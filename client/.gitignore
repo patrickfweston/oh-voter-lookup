@@ -1,0 +1,7 @@
+# Most ignore rules live in the repo root `.gitignore`.
+# These stay for tooling that only scans `client/`.
+
+node_modules/
+dist/
+dist-ssr/
+*.local
