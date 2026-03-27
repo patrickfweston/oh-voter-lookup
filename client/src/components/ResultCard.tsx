@@ -1,6 +1,14 @@
-import { DISPLAY_KEYS, COLUMN_LABELS } from '../constants'
+import {
+  DISPLAY_KEYS,
+  COLUMN_LABELS,
+  MOBILE_CARD_SUMMARY_KEYS,
+} from '../constants'
 import type { VoterRow } from '../types'
 import { VotingHistory } from './VotingHistory'
+
+const summaryKeySet = new Set<string>(MOBILE_CARD_SUMMARY_KEYS)
+
+const expandedFieldKeys = DISPLAY_KEYS.filter((k) => !summaryKeySet.has(k))
 
 type ResultCardProps = {
   row: VoterRow
@@ -9,43 +17,59 @@ type ResultCardProps = {
 }
 
 export function ResultCard({ row, expanded, onToggle }: ResultCardProps) {
-  const label = [row.LAST_NAME, row.FIRST_NAME, row.MIDDLE_NAME]
+  const label = [row.LAST_NAME, row.FIRST_NAME, row.MIDDLE_NAME, row.SUFFIX]
     .filter(Boolean)
     .join(' ')
 
+  const nameForAria = label || 'voter'
+
   return (
     <article className="result-card">
-      <button
-        type="button"
-        className="result-card-toggle"
-        onClick={onToggle}
-        aria-expanded={expanded}
-        aria-label={
-          expanded
-            ? `Collapse voting history for ${label || 'voter'}`
-            : `Show voting history for ${label || 'voter'}`
-        }
-      >
-        <span className="result-card-chevron" aria-hidden>
-          {expanded ? '▼' : '▶'}
-        </span>
-        <span className="result-card-heading">{label || 'Voter record'}</span>
-      </button>
+      <div className="result-card-banner">
+        <h3 className="result-card-name">{label || 'Voter record'}</h3>
+        <button
+          type="button"
+          className="result-card-toggle"
+          onClick={onToggle}
+          aria-expanded={expanded}
+          aria-label={
+            expanded
+              ? `Collapse full details for ${nameForAria}`
+              : `Show full details for ${nameForAria}`
+          }
+        >
+          <span className="result-card-chevron" aria-hidden>
+            {expanded ? '▼' : '▶'}
+          </span>
+        </button>
+      </div>
 
-      <dl className="result-card-fields">
-        {DISPLAY_KEYS.map((k) => (
-          <div key={k} className="result-card-field">
-            <dt>{COLUMN_LABELS[k]}</dt>
-            <dd>{row[k] ?? ''}</dd>
+      {!expanded ? (
+        <dl className="result-card-fields result-card-summary">
+          <div className="result-card-field">
+            <dt>{COLUMN_LABELS.DATE_OF_BIRTH}</dt>
+            <dd>{row.DATE_OF_BIRTH ?? ''}</dd>
           </div>
-        ))}
-      </dl>
-
-      {expanded ? (
-        <div className="result-card-history">
-          <VotingHistory row={row} />
-        </div>
-      ) : null}
+          <div className="result-card-field">
+            <dt>{COLUMN_LABELS.COUNTY_ID}</dt>
+            <dd>{row.COUNTY_ID ?? ''}</dd>
+          </div>
+        </dl>
+      ) : (
+        <>
+          <dl className="result-card-fields result-card-detail">
+            {expandedFieldKeys.map((k) => (
+              <div key={k} className="result-card-field">
+                <dt>{COLUMN_LABELS[k]}</dt>
+                <dd>{row[k] ?? ''}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="result-card-history">
+            <VotingHistory row={row} />
+          </div>
+        </>
+      )}
     </article>
   )
 }

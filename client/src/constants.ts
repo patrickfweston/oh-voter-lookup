@@ -36,6 +36,16 @@ export const DISPLAY_KEYS: (keyof VoterRow)[] = [
   'CAREER_CENTER',
 ]
 
+/** Mobile card: shown in header + collapsed rows; expanded lists the rest of DISPLAY_KEYS. */
+export const MOBILE_CARD_SUMMARY_KEYS: (keyof VoterRow)[] = [
+  'LAST_NAME',
+  'FIRST_NAME',
+  'MIDDLE_NAME',
+  'SUFFIX',
+  'DATE_OF_BIRTH',
+  'COUNTY_ID',
+]
+
 const _columnLabels: Record<string, string> = {}
 for (const k of DISPLAY_KEYS) {
   _columnLabels[k] =
