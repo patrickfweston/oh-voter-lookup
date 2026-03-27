@@ -6,15 +6,18 @@
 # 4. In Cloudflare DNS for patrickfweston.com, create a CNAME:
 #      ohvoter -> <tunnel-id>.cfargotunnel.com (proxied / orange cloud)
 #
-# Service URL: use the port your stack listens on.
-#   - Docker (recommended): npm run docker:up → http://127.0.0.1:8092
-#       (nginx `server_name` includes ohvoter.patrickfweston.com; forwards X-Forwarded-* to API)
-#   - Local dev (Vite + API): http://127.0.0.1:5173  (API on 3092; Vite proxies /api)
+# Service URL (Docker publishes web on host port 8092 → nginx, which proxies /api):
+#   - Same machine as cloudflared: http://127.0.0.1:8092
+#   - cloudflared on another box: use the Docker host’s LAN IP, e.g.:
+#       http://192.168.68.223:8092
+#     (From the tunnel host: curl -sS -o /dev/null -w '%{http_code}\n' http://THAT_IP:8092/
+#      should print 200. Open firewall on the Docker host for 8092 from the tunnel machine if needed.)
+#   - Local dev (Vite + API): http://127.0.0.1:5173 on the dev machine (API on 3092; Vite proxies /api)
 
 tunnel: YOUR_TUNNEL_UUID_HERE
 credentials-file: /path/to/YOUR_TUNNEL_UUID.json
 
 ingress:
   - hostname: ohvoter.patrickfweston.com
-    service: http://127.0.0.1:8092
+    service: http://192.168.x.x:8092
   - service: http_status:404
