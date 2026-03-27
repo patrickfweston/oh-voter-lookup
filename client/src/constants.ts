@@ -29,6 +29,7 @@ export const DISPLAY_KEYS: (keyof VoterRow)[] = [
   'STATE_REPRESENTATIVE_DISTRICT',
   'STATE_SENATE_DISTRICT',
   'SOS_VOTERID',
+  'COUNTY_NUMBER',
   'COUNTY_ID',
   'CITY',
   'TOWNSHIP',
@@ -36,14 +37,16 @@ export const DISPLAY_KEYS: (keyof VoterRow)[] = [
   'CAREER_CENTER',
 ]
 
-/** Mobile card: shown in header + collapsed rows; expanded lists the rest of DISPLAY_KEYS. */
+/**
+ * Mobile card: these fields are only in the title row (banner), so the expanded
+ * detail list uses the rest of DISPLAY_KEYS. Date of birth and county number stay
+ * in the collapsed preview but also appear again when expanded (full record).
+ */
 export const MOBILE_CARD_SUMMARY_KEYS: (keyof VoterRow)[] = [
   'LAST_NAME',
   'FIRST_NAME',
   'MIDDLE_NAME',
   'SUFFIX',
-  'DATE_OF_BIRTH',
-  'COUNTY_ID',
 ]
 
 const _columnLabels: Record<string, string> = {}
@@ -51,7 +54,9 @@ for (const k of DISPLAY_KEYS) {
   _columnLabels[k] =
     k === 'PARTY_AFFILIATION'
       ? 'Party affiliation'
-      : String(k).replaceAll('_', ' ')
+      : k === 'COUNTY_NUMBER'
+        ? 'County number'
+        : String(k).replaceAll('_', ' ')
 }
 
 /** Human-readable table header labels aligned with DISPLAY_KEYS. */

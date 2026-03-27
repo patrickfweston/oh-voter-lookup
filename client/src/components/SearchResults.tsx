@@ -1,18 +1,16 @@
 import { DISPLAY_KEYS, COLUMN_LABELS } from '../constants'
-import type { CountyOption, SearchResponse } from '../types'
+import type { SearchResponse } from '../types'
 import { ResultCard } from './ResultCard'
 import { ResultTableRow } from './ResultTableRow'
 
 type SearchResultsProps = {
   data: SearchResponse
-  counties: CountyOption[]
   expandedKey: string | null
   onToggleRow: (rowKey: string) => void
 }
 
 export function SearchResults({
   data,
-  counties,
   expandedKey,
   onToggleRow,
 }: SearchResultsProps) {
@@ -68,7 +66,6 @@ export function SearchResults({
                 <ResultCard
                   key={rowKey}
                   row={row}
-                  counties={counties}
                   expanded={expandedKey === rowKey}
                   onToggle={() => onToggleRow(rowKey)}
                 />
