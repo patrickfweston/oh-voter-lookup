@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import './App.css'
+import { AccessGate, hasSessionAccess } from './components/AccessGate'
 import { AppHeader } from './components/AppHeader'
 import { SearchForm } from './components/SearchForm'
 import { SearchResults } from './components/SearchResults'
@@ -11,6 +12,16 @@ import type {
 } from './types'
 
 function App() {
+  const [unlocked, setUnlocked] = useState(hasSessionAccess)
+
+  if (!unlocked) {
+    return <AccessGate onUnlock={() => setUnlocked(true)} />
+  }
+
+  return <MainApp />
+}
+
+function MainApp() {
   const [last, setLast] = useState('')
   const [first, setFirst] = useState('')
   const [middle, setMiddle] = useState('')

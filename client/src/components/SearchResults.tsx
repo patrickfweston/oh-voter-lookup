@@ -34,6 +34,13 @@ export function SearchResults({
             <thead>
               <tr>
                 <th scope="col" className="col-expand" aria-hidden />
+                <th scope="col" className="col-likert">
+                  Lean
+                  <span className="th-hint" title="Heuristic from party on record and primary ballot fields; not a prediction. Scale: Democrat left, Republican right; rating 1–5 is strong R through strong D.">
+                    {' '}
+                    (D←·→R)
+                  </span>
+                </th>
                 {DISPLAY_KEYS.map((k) => (
                   <th key={k}>{COLUMN_LABELS[k]}</th>
                 ))}
