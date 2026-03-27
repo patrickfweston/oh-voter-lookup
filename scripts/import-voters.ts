@@ -21,7 +21,7 @@ import { ensureSchema, getDatabaseUrl } from '../server/db';
 /** Run from the repo root (e.g. `npm run db:import`). */
 const REPO_ROOT = process.cwd();
 const DATA_GLOB = process.env.VOTER_DATA_GLOB || 'data/*.txt';
-const BATCH_SIZE = Number(process.env.IMPORT_BATCH_SIZE) || 800;
+const BATCH_SIZE = Number(process.env.IMPORT_BATCH_SIZE) || 1000;
 
 type BatchRow = {
   sos: string;
