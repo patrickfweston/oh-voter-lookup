@@ -74,7 +74,7 @@ export function SearchForm({
           />
         </label>
         <label>
-          County (by number)
+          County
           <select
             name="county"
             value={county}

@@ -39,10 +39,15 @@ export function PartisanLeanGauge({ row }: PartisanLeanGaugeProps) {
       >
         <GaugeComponent
           className="partisan-gauge"
+          style={{
+            overflow: 'visible',
+            maxHeight: 'none',
+            height: 'auto',
+          }}
           type="semicircle"
           marginInPercent={{
             top: 0.06,
-            bottom: 0,
+            bottom: 0.12,
             left: 0.06,
             right: 0.06,
           }}

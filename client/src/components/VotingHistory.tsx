@@ -31,11 +31,7 @@ export function VotingHistory({ row }: VotingHistoryProps) {
   return (
     <div className="vh-wrap">
       <section className="vh-lean-block" aria-label="Partisan lean (informal)">
-        <h4 className="vh-heading">Lean</h4>
-        <p className="vh-lean-hint">
-          Informal D ↔ R readout from registration and primary ballot fields. Hover
-          the gauge for details.
-        </p>
+        <h4 className="vh-heading">Partisan Likelihood</h4>
         <PartisanLeanGauge row={row} />
       </section>
       <p className="vh-party">
